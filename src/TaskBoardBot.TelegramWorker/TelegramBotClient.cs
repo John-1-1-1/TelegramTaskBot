@@ -1,8 +1,13 @@
+using System.Globalization;
+using Hors;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using TaskBoardBot.TelegramWorker.IntermittentPipeline;
+using TaskBoardBot.TelegramWorker.Steps;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TaskBoardBot.TelegramWorker;
 
@@ -12,6 +17,7 @@ public class TelegramBotClient {
     private ReceiverOptions _receiverOptions;
     private readonly IConfiguration _configuration;
     private readonly IServiceProvider _serviceProvider;
+    private readonly InterPipeline _pipeline = new InterPipeline();
 
     public TelegramBotClient(ILogger<Worker> logger,IServiceProvider serviceProvider, IConfiguration configuration) {
         _configuration = configuration;
@@ -22,11 +28,16 @@ public class TelegramBotClient {
             logger.LogError("TelegramToken is null");
             throw new ArgumentNullException(token);
         }
+                    
+        _pipeline.Add(new TelegramMessageValidator());
+        _pipeline.Add(new TelegramCommands());
+        _pipeline.Add(new TelegramTextMessages());
         
         _telegramBotClient = new Telegram.Bot.TelegramBotClient(token);
         _receiverOptions = new ReceiverOptions() {
             AllowedUpdates = new[] {
-                UpdateType.Message
+                UpdateType.Message,
+                UpdateType.CallbackQuery 
             }
         };
     }
@@ -47,17 +58,7 @@ public class TelegramBotClient {
         try {
             switch (update.Type) {
                 case UpdateType.Message: {
-                    var message = update.Message;
-
-                    var chat = message?.Chat;
-                    var text = message?.Text;
-                    if (chat == null || text == null) {
-                        break;
-                    }
-
-                    botClient.SendTextMessageAsync(
-                        chat, text);
-                    
+                    _pipeline.Execute(new PipelineContext(_telegramBotClient, update.Message));
                     break;
                 }
             }

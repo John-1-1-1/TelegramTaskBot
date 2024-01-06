@@ -6,6 +6,7 @@ public sealed class ApplicationContext : DbContext {
     public DbSet<User> Users { get; set; } = null!;
 
     public ApplicationContext(DbContextOptions<DbContext> options) : base(options) {
+        
     }
 }
 
