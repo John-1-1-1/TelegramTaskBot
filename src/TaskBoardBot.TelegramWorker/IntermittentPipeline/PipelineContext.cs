@@ -3,14 +3,9 @@ using Telegram.Bot.Types;
 
 namespace TaskBoardBot.TelegramWorker.IntermittentPipeline;
 
-public class PipelineContext {
+public class PipelineContext(ITelegramBotClient telegramBotClient, Message message) {
     public bool IsExecute = true;
-    public ITelegramBotClient TelegramBotClient;
-    public Message Message;
+    public readonly ITelegramBotClient TelegramBotClient = telegramBotClient;
+    public readonly Message Message = message;
     public IServiceProvider ServiceProvider;
-    
-    public PipelineContext(ITelegramBotClient telegramBotClient, Message message) {
-        TelegramBotClient = telegramBotClient;
-        Message = message;
-    }
 }

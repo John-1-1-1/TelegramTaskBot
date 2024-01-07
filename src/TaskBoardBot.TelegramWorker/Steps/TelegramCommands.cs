@@ -1,6 +1,6 @@
+using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.IntermittentPipeline;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace TaskBoardBot.TelegramWorker.Steps;
 
@@ -18,7 +18,7 @@ public class TelegramCommands: PipelineUnit {
         switch (text) {
             case "/start": {
                 
-                r?.Users.Add(new User() {TgId = chat!.Id, UserState = TelegramStates.None } );
+                r?.Users.Add(new Users() {TgId = chat!.Id, UserState = TelegramStates.None } );
                 r.SaveChanges();
                 
                 pipelineContext.TelegramBotClient.SendTextMessageAsync(
@@ -47,7 +47,3 @@ public class TelegramCommands: PipelineUnit {
     }
 }
 
-public enum TelegramStates {
-    None,
-    ChangeLocalTime,
-}

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TaskBoardBot.TelegramWorker;
+using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.IntermittentPipeline;
 using TaskBoardBot.TelegramWorker.Steps;
 
@@ -14,12 +15,12 @@ builder.Services.AddSingleton<InterPipeline>(sp => new InterPipeline(sp)
     .Add(new TelegramMessageValidator())
     .Add(new TelegramCommands())
     .Add(new TelegramTextMessages()));
+
 var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
 
 optionsBuilder.UseNpgsql(connection);
 
 builder.Services.AddScoped<ApplicationContext>(db => new ApplicationContext(optionsBuilder.Options));
-
 
 var host = builder.Build();
 host.Run();

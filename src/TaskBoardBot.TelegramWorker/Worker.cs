@@ -9,8 +9,7 @@ public class Worker : BackgroundService
         _logger = logger;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
         _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
         var telegramBotClient = _serviceProvider.GetService<TelegramBotClient>();
         telegramBotClient.Satrt();
