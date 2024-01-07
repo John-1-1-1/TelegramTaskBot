@@ -15,11 +15,21 @@ public class TelegramTextMessages: PipelineUnit {
 
         var buttons = new List<InlineKeyboardButton[]>();
                     
+        var scope = pipelineContext.ServiceProvider.CreateScope();
+        
+        var r = scope.ServiceProvider.GetService(typeof(ApplicationContext)) as ApplicationContext;
+
+
+        var user = r?.Users.FirstOrDefault(u => u.TgId == pipelineContext.Message.Chat.Id);
+        user.AddedText = parseTime.Text;
+        r?.Users.Update(user);
+        r.SaveChanges();
+
         string textMessage = parseTime.Text + "\n\n";
         foreach (var date in parseTime.Dates) {
             buttons.Add(new InlineKeyboardButton[] {
                 InlineKeyboardButton.WithCallbackData(date.DateTo.ToString(CultureInfo.InvariantCulture),
-                    date.DateTo.ToString(CultureInfo.InvariantCulture)),
+                    "t"+date.DateTo.Date.ToFileTime() )
             });
         }
         buttons.Add(new InlineKeyboardButton[] {

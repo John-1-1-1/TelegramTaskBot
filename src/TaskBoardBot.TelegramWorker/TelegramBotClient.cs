@@ -17,21 +17,19 @@ public class TelegramBotClient {
     private ReceiverOptions _receiverOptions;
     private readonly IConfiguration _configuration;
     private readonly IServiceProvider _serviceProvider;
-    private readonly InterPipeline _pipeline = new InterPipeline();
+    private readonly InterPipeline _pipeline;
 
     public TelegramBotClient(ILogger<Worker> logger,IServiceProvider serviceProvider, IConfiguration configuration) {
         _configuration = configuration;
         _serviceProvider = serviceProvider;
+        _pipeline = _serviceProvider.GetService<InterPipeline>();
+        
         var token = _configuration.GetValue<String>("TelegramToken");
 
         if (token == null) {
             logger.LogError("TelegramToken is null");
             throw new ArgumentNullException(token);
         }
-                    
-        _pipeline.Add(new TelegramMessageValidator());
-        _pipeline.Add(new TelegramCommands());
-        _pipeline.Add(new TelegramTextMessages());
         
         _telegramBotClient = new Telegram.Bot.TelegramBotClient(token);
         _receiverOptions = new ReceiverOptions() {
@@ -51,14 +49,32 @@ public class TelegramBotClient {
     private Task UpdateHandler(ITelegramBotClient botClient,
         Update update, CancellationToken cancellationToken) {
 
-        //var scope = _serviceProvider.CreateScope();
-        
-        //var r = scope.ServiceProvider.GetService(typeof(ApplicationContext)) as ApplicationContext;
+        var scope = _serviceProvider.CreateScope();
+        var r = scope.ServiceProvider.GetService(typeof(ApplicationContext)) as ApplicationContext;
         
         try {
             switch (update.Type) {
                 case UpdateType.Message: {
                     _pipeline.Execute(new PipelineContext(_telegramBotClient, update.Message));
+                    break;
+                }
+                case UpdateType.CallbackQuery: {
+                    var chat = update.CallbackQuery?.Message?.Chat;
+                    var message = update.CallbackQuery?.Data!;
+
+                    if (message[0] == 't') {
+                        message = message.Remove(0, 1);
+                        botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+
+                        var user = r.Users.FirstOrDefault(u => u.TgId == chat.Id);
+                        var f = long.Parse(message);
+                        var cc = DateTime.FromFileTime(f);
+                        user.AddedTime = cc;
+                        r.Users.Update(user);
+                        r.SaveChanges();
+                        _telegramBotClient.SendTextMessageAsync(chat, message);
+                    }
+                    
                     break;
                 }
             }

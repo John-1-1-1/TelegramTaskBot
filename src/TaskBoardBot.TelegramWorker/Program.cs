@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TaskBoardBot.TelegramWorker;
+using TaskBoardBot.TelegramWorker.IntermittentPipeline;
+using TaskBoardBot.TelegramWorker.Steps;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -8,6 +10,10 @@ string? connection = builder.Configuration.GetConnectionString("DefaultConnectio
 builder.Configuration.AddJsonFile("token.json");
 builder.Services.AddSingleton<TelegramBotClient>();
 builder.Services.AddHostedService<Worker>();
+builder.Services.AddSingleton<InterPipeline>(sp => new InterPipeline(sp)
+    .Add(new TelegramMessageValidator())
+    .Add(new TelegramCommands())
+    .Add(new TelegramTextMessages()));
 var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
 
 optionsBuilder.UseNpgsql(connection);
