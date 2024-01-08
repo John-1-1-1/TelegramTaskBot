@@ -1,6 +1,6 @@
 namespace TaskBoardBot.TelegramWorker.Steps;
 
-public enum TelegramStates {
+public enum TelegramState {
     None,
     ChangeLocalTime,
 }

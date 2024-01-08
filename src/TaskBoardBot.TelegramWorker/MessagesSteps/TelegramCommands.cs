@@ -8,30 +8,24 @@ public class TelegramCommands: PipelineUnit {
     public override PipelineContext Execute(PipelineContext pipelineContext) {
         pipelineContext.IsExecute = false;
         
-        var chat = pipelineContext.Message?.Chat;
-        var text = pipelineContext.Message?.Text;
-        
-        var scope = pipelineContext.ServiceProvider.CreateScope();
-        
-        var r = scope.ServiceProvider.GetService(typeof(ApplicationContext)) as ApplicationContext;
-        
+        var chat = pipelineContext.Message.Chat;
+        var text = pipelineContext.Message.Text;
+
         switch (text) {
             case "/start": {
-                
-                r?.Users.Add(new Users() {TgId = chat!.Id, UserState = TelegramStates.None } );
-                r.SaveChanges();
-                
+                pipelineContext.DataBaseService.AddUser(chat.Id, TelegramState.None);
                 pipelineContext.TelegramBotClient.SendTextMessageAsync(
                     chat, text);
                 return pipelineContext;
             }
 
             case "/changeTime": {
-                var user = r.Users.FirstOrDefault(u => u.TgId == chat.Id);
-                user.UserState = TelegramStates.ChangeLocalTime;
-                r?.Users.Update(user);
-                r.SaveChanges();
-                
+                var user = pipelineContext.DataBaseService.GetUser(chat.Id);
+                if (user != null) {
+                    user.UserState = TelegramState.ChangeLocalTime;
+                    pipelineContext.DataBaseService.UpdateUser(user);
+                }
+
                 pipelineContext.TelegramBotClient.SendTextMessageAsync(
                     chat, "Введите ваше время.\n\n"+
                           "Пример:\n"+

@@ -13,18 +13,11 @@ public class TelegramTextMessages: PipelineUnit {
     public override PipelineContext Execute(PipelineContext pipelineContext) {
         
         var parseTime = _horsTextParser.Parse(pipelineContext.Message.Text, DateTime.Now);
-
         var buttons = new List<InlineKeyboardButton[]>();
-                    
-        var scope = pipelineContext.ServiceProvider.CreateScope();
-        
-        var r = scope.ServiceProvider.GetService(typeof(ApplicationContext)) as ApplicationContext;
 
-
-        var user = r?.Users.FirstOrDefault(u => u.TgId == pipelineContext.Message.Chat.Id);
+        var user = pipelineContext.DataBaseService.GetUser(pipelineContext.Message.Chat.Id);
         user.AddedText = parseTime.Text;
-        r?.Users.Update(user);
-        r.SaveChanges();
+        pipelineContext.DataBaseService.UpdateUser(user);
 
         string textMessage = parseTime.Text + "\n\n";
         foreach (var date in parseTime.Dates) {

@@ -1,7 +1,16 @@
+using TaskBoardBot.TelegramWorker.Context;
+
 namespace TaskBoardBot.TelegramWorker.IntermittentPipeline;
 
-public class InterPipeline(IServiceProvider serviceProvider) : PipelineUnit {
+public class InterPipeline : PipelineUnit {
 
+    private readonly DataBaseService _dataBaseService;
+    
+    public InterPipeline(IServiceProvider iServiceProvider) {
+        
+        _dataBaseService = iServiceProvider.GetService<DataBaseService>();
+    }
+    
     private readonly ICollection<PipelineUnit> _pipelineUnits = new List<PipelineUnit>();
 
     public InterPipeline Add(PipelineUnit unit) {
@@ -10,7 +19,7 @@ public class InterPipeline(IServiceProvider serviceProvider) : PipelineUnit {
     }
     
     public override PipelineContext Execute(PipelineContext obj) {
-        obj.ServiceProvider = serviceProvider;
+        obj.DataBaseService = _dataBaseService;
         foreach (var pipelineUnit in _pipelineUnits) {
             obj = pipelineUnit.Execute(obj);
             if (!obj.IsExecute) {
