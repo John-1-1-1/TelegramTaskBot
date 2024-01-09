@@ -1,11 +1,9 @@
-using TaskBoardBot.TelegramWorker.Steps;
-using Telegram.Bot.Types;
+using TaskBoardBot.TelegramWorker.PipelineSteps.MessagesSteps;
 
 namespace TaskBoardBot.TelegramWorker.Context;
 
 public class DataBaseService {
-
-    private ApplicationContext _applicationContext;
+    private readonly ApplicationContext _applicationContext;
     private readonly ILogger<DataBaseService> _logger;
     
     public DataBaseService(ILogger<DataBaseService> logger, IServiceProvider serviceProvider) {

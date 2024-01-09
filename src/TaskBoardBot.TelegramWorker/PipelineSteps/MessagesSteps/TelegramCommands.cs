@@ -1,8 +1,7 @@
-using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.IntermittentPipeline;
 using Telegram.Bot;
 
-namespace TaskBoardBot.TelegramWorker.Steps;
+namespace TaskBoardBot.TelegramWorker.PipelineSteps.MessagesSteps;
 
 public class TelegramCommands: PipelineUnit {
     public override PipelineContext Execute(PipelineContext pipelineContext) {

@@ -1,6 +1,6 @@
 using TaskBoardBot.TelegramWorker.IntermittentPipeline;
 
-namespace TaskBoardBot.TelegramWorker.Steps;
+namespace TaskBoardBot.TelegramWorker.PipelineSteps.MessagesSteps;
 
 public class TelegramMessageValidator: PipelineUnit {
     public override PipelineContext Execute(PipelineContext pipelineContext) {

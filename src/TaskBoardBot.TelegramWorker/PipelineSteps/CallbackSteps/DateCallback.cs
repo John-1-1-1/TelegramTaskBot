@@ -2,7 +2,7 @@ using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.IntermittentPipeline;
 using Telegram.Bot;
 
-namespace TaskBoardBot.TelegramWorker.CallbackSteps;
+namespace TaskBoardBot.TelegramWorker.PipelineSteps.CallbackSteps;
 
 public class DateCallback: PipelineUnit {
     public override PipelineContext Execute(PipelineContext pipelineContext) {

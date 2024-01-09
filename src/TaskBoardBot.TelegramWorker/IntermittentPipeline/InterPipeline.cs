@@ -7,8 +7,8 @@ public class InterPipeline : PipelineUnit {
     private readonly DataBaseService _dataBaseService;
     
     public InterPipeline(IServiceProvider iServiceProvider) {
-        
-        _dataBaseService = iServiceProvider.GetService<DataBaseService>();
+        var db = iServiceProvider.GetService<DataBaseService>();
+        _dataBaseService = db ?? throw new Exception("DataBaseService is null");
     }
     
     private readonly ICollection<PipelineUnit> _pipelineUnits = new List<PipelineUnit>();

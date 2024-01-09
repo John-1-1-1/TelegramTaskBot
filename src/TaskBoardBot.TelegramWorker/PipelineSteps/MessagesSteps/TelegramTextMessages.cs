@@ -1,11 +1,10 @@
 using System.Globalization;
 using Hors;
-using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.IntermittentPipeline;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace TaskBoardBot.TelegramWorker.Steps;
+namespace TaskBoardBot.TelegramWorker.PipelineSteps.MessagesSteps;
 
 public class TelegramTextMessages: PipelineUnit {
     

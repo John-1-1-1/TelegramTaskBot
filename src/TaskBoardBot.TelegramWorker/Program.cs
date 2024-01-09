@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using TaskBoardBot.TelegramWorker;
-using TaskBoardBot.TelegramWorker.CallbackSteps;
 using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.IntermittentPipeline;
-using TaskBoardBot.TelegramWorker.Steps;
+using TaskBoardBot.TelegramWorker.PipelineSteps.CallbackSteps;
+using TaskBoardBot.TelegramWorker.PipelineSteps.MessagesSteps;
 
 var builder = Host.CreateApplicationBuilder(args);
 
