@@ -16,7 +16,6 @@ builder.Services.AddSingleton<DataBaseService>();
 builder.Services.AddSingleton<InterPipeline>(sp => 
     new InterPipeline(sp)
         .Add(new DateCallback())
-        .Add(new TelegramMessageValidator())
         .Add(new TelegramCommands())
         .Add(new TelegramTextMessages()));
 
