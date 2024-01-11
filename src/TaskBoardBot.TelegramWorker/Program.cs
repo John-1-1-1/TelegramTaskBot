@@ -3,8 +3,6 @@ using TaskBoardBot.TelegramWorker;
 using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.IntermittentPipeline;
 using TaskBoardBot.TelegramWorker.PipelineSteps;
-using TaskBoardBot.TelegramWorker.PipelineSteps.CallbackSteps;
-using TaskBoardBot.TelegramWorker.PipelineSteps.MessagesSteps;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -17,7 +15,11 @@ builder.Services.AddSingleton<DataBaseService>();
 builder.Services.AddSingleton<InterPipeline>(sp => 
     new InterPipeline(sp)
         .Add(new StartStep())
-        .Add(new GetTaskStep()));
+        .Add(new ListTasksStep())
+        .Add(new LocalTimeStep())
+    
+        .Add(new AddTaskStep())
+    );
 
 var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
 

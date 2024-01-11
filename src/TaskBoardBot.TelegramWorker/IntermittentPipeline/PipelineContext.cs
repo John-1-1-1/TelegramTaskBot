@@ -29,4 +29,8 @@ public class PipelineContext(ITelegramBotClient telegramBotClient, Message? mess
 
         return callbackQuery;
     }
+
+    public void KillPipeline() {
+        IsExecute = false;
+    }
 }

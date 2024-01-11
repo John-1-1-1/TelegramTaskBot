@@ -2,12 +2,8 @@ using Telegram.Bot.Types.Enums;
 
 namespace TaskBoardBot.TelegramWorker.IntermittentPipeline;
 
-public abstract class PipelineUnit {
-    public abstract PipelineContext Execute(PipelineContext pipelineContext);
-}
-
-public abstract class NewPipelineUnit: t {
-    public PipelineContext Execute(PipelineContext pipelineContext) {
+public abstract class PipelineUnit: PipelineMethods {
+    public override PipelineContext Execute(PipelineContext pipelineContext) {
         switch (pipelineContext.Type) {
             case UpdateType.Message: {
                 return UpdateMessage(pipelineContext);
@@ -29,9 +25,8 @@ public abstract class NewPipelineUnit: t {
     }
 }
 
-public abstract class t {
-    
-public abstract PipelineContext UpdateMessage(PipelineContext pipelineContext);
-
-public abstract PipelineContext UpdateCallbackQuery(PipelineContext pipelineContext);
+public abstract class PipelineMethods {
+    public abstract PipelineContext Execute(PipelineContext pipelineContext);
+    public abstract PipelineContext UpdateMessage(PipelineContext pipelineContext); 
+    public abstract PipelineContext UpdateCallbackQuery(PipelineContext pipelineContext);
 }
