@@ -50,12 +50,12 @@ public class TelegramBotClient {
             switch (update.Type) {
                 case UpdateType.Message: {
                     _pipeline.Execute(new PipelineContext(_telegramBotClient, update.Message, 
-                        dataBaseService, update.CallbackQuery));
+                        dataBaseService, update.CallbackQuery, update.Type));
                     break;
                 }
                 case UpdateType.CallbackQuery: {
                     _pipeline.Execute(new PipelineContext(_telegramBotClient, update.Message,
-                        dataBaseService, update.CallbackQuery));
+                        dataBaseService, update.CallbackQuery, update.Type));
                     break;
                 }
             }

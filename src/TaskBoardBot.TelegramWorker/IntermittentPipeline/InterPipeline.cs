@@ -11,9 +11,9 @@ public class InterPipeline : PipelineUnit {
         _dataBaseService = db ?? throw new Exception("DataBaseService is null");
     }
     
-    private readonly ICollection<PipelineUnit> _pipelineUnits = new List<PipelineUnit>();
+    private readonly ICollection<NewPipelineUnit> _pipelineUnits = new List<NewPipelineUnit>();
 
-    public InterPipeline Add(PipelineUnit unit) {
+    public InterPipeline Add(NewPipelineUnit unit) {
         _pipelineUnits.Add(unit);
         return this;
     }

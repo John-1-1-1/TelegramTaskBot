@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskBoardBot.TelegramWorker;
 using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.IntermittentPipeline;
+using TaskBoardBot.TelegramWorker.PipelineSteps;
 using TaskBoardBot.TelegramWorker.PipelineSteps.CallbackSteps;
 using TaskBoardBot.TelegramWorker.PipelineSteps.MessagesSteps;
 
@@ -15,9 +16,8 @@ builder.Services.AddHostedService<Worker>();
 builder.Services.AddSingleton<DataBaseService>();
 builder.Services.AddSingleton<InterPipeline>(sp => 
     new InterPipeline(sp)
-        .Add(new DateCallback())
-        .Add(new TelegramCommands())
-        .Add(new TelegramTextMessages()));
+        .Add(new StartStep())
+        .Add(new GetTaskStep()));
 
 var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
 
