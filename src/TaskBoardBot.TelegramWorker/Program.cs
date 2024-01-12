@@ -8,6 +8,9 @@ var builder = Host.CreateApplicationBuilder(args);
 
 string? connection = builder.Configuration.GetConnectionString("DefaultConnection");
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+
 builder.Configuration.AddJsonFile("token.json");
 builder.Services.AddSingleton<TelegramBotClient>();
 builder.Services.AddHostedService<Worker>();

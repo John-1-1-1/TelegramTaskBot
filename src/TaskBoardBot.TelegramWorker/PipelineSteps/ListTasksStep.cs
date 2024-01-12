@@ -21,7 +21,7 @@ public class ListTasksStep: PipelineUnit {
                 
                 pipelineContext.TelegramBotClient.SendTextMessageAsync(
                     message.Chat, string.Join("\n", 
-                        listTimes.Select(t => "\ud83d\udccc На "+ t.First().DateTime + " \n" + 
+                        listTimes.Select(t => "\ud83d\udccc На "+ (t.First().DateTime) + " \n" + 
                                               string.Join("", t.Select( u => "\u2705 " + u.Text + "\n")) ))); 
                 pipelineContext.IsExecute = false;
                 break;
