@@ -15,12 +15,12 @@ builder.Configuration.AddJsonFile("token.json");
 builder.Services.AddSingleton<TelegramBotClient>();
 builder.Services.AddHostedService<Worker>();
 builder.Services.AddSingleton<DataBaseService>();
+builder.Services.AddSingleton<WatchDogTasks>();
 builder.Services.AddSingleton<InterPipeline>(sp => 
     new InterPipeline(sp)
         .Add(new StartStep())
         .Add(new ListTasksStep())
         .Add(new LocalTimeStep())
-    
         .Add(new AddTaskStep())
     );
 

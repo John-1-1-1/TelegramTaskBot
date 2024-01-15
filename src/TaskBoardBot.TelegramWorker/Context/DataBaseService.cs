@@ -73,5 +73,26 @@ public class DataBaseService {
             _logger.LogError("AddTasks: ApplicationContext incorrect"); 
         }
     }
-    
+
+    public ICollection<Tasks> GetUpcomingTasks(DateTime dateTime, int deltaMin) {
+        try {
+            return _applicationContext.Tasks.Where(t=> (t.DateTime > dateTime) 
+                                                       && (dateTime.AddMinutes(deltaMin) > t.DateTime) 
+                                                       && t.IsActive).ToList();
+        }
+        catch {
+            _logger.LogError("GetUpcomingTasks: ApplicationContext incorrect"); 
+            return new List<Tasks>();
+        }
+    }
+
+    public void UpdateTask(Tasks task) {
+        try {
+            _applicationContext.Tasks.Update(task);
+            _applicationContext.SaveChanges();
+        }
+        catch (Exception e) {
+            _logger.LogError("UpdateTask: ApplicationContext incorrect"); 
+        }
+    }
 }

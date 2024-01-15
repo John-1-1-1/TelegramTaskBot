@@ -65,7 +65,7 @@ public class AddTaskStep: PipelineUnit {
                 pipelineContext.CallbackQuery.Message.Chat.Id);
 
             pipelineContext.DataBaseService.AddTasks(new Tasks() {
-                DateTime = DateTime.SpecifyKind(DateTime.FromFileTime(long.Parse(message)), DateTimeKind.Utc),
+                DateTime = DateTime.FromFileTime(long.Parse(message)),
                 TgId = user.TgId, Text = user.AddedText
             });
 

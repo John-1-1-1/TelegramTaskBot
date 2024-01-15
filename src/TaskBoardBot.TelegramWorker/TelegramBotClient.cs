@@ -47,18 +47,8 @@ public class TelegramBotClient {
             ServiceProvider.GetService<DataBaseService>();
         
         try {
-            switch (update.Type) {
-                case UpdateType.Message: {
-                    _pipeline.Execute(new PipelineContext(_telegramBotClient, update.Message, 
-                        dataBaseService, update.CallbackQuery, update.Type));
-                    break;
-                }
-                case UpdateType.CallbackQuery: {
-                    _pipeline.Execute(new PipelineContext(_telegramBotClient, update.Message,
-                        dataBaseService, update.CallbackQuery, update.Type));
-                    break;
-                }
-            }
+            _pipeline.Execute(new PipelineContext(_telegramBotClient, update.Message, 
+                dataBaseService, update.CallbackQuery, update.Type));
         }
         catch {
             // ignored
@@ -69,5 +59,9 @@ public class TelegramBotClient {
 
     private Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken) {
         return Task.CompletedTask;
+    }
+
+    public void SendUpcomingTask(Tasks task) {
+        _telegramBotClient.SendTextMessageAsync(task.TgId, task.Text);
     }
 }
