@@ -1,6 +1,6 @@
 using Telegram.Bot.Types.Enums;
 
-namespace TaskBoardBot.TelegramWorker.IntermittentPipeline;
+namespace TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 
 public abstract class PipelineUnit: PipelineMethods {
     public override PipelineContext Execute(PipelineContext pipelineContext) {

@@ -1,17 +1,12 @@
-using TaskBoardBot.TelegramWorker.Context;
+using TaskBoardBot.TelegramWorker.Services;
 
-namespace TaskBoardBot.TelegramWorker.IntermittentPipeline;
+namespace TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 
-public class InterPipeline : PipelineUnit {
-
-    private readonly DataBaseService _dataBaseService;
-    
-    public InterPipeline(IServiceProvider iServiceProvider) {
-        var db = iServiceProvider.GetService<DataBaseService>();
-        _dataBaseService = db ?? throw new Exception("DataBaseService is null");
-    }
+public class InterPipeline(IServiceProvider iServiceProvider) : PipelineUnit {
     
     private readonly ICollection<PipelineUnit> _pipelineUnits = new List<PipelineUnit>();
+    public DataBaseService GetDbService { get; } = iServiceProvider.GetService<DataBaseService>()
+                                                   ?? throw new Exception("DataBaseService is null");
 
     public InterPipeline Add(PipelineUnit unit) {
         _pipelineUnits.Add(unit);
@@ -19,7 +14,7 @@ public class InterPipeline : PipelineUnit {
     }
     
     public override PipelineContext Execute(PipelineContext obj) {
-        obj.DataBaseService = _dataBaseService;
+        obj.Parent = this;
         foreach (var pipelineUnit in _pipelineUnits) {
             obj = pipelineUnit.Execute(obj);
             if (!obj.IsExecute) {

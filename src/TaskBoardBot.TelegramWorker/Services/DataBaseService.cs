@@ -1,6 +1,7 @@
-using TaskBoardBot.TelegramWorker.PipelineSteps;
+using TaskBoardBot.TelegramWorker.Context;
+using TaskBoardBot.TelegramWorker.PipelineComponents;
 
-namespace TaskBoardBot.TelegramWorker.Context;
+namespace TaskBoardBot.TelegramWorker.Services;
 
 public class DataBaseService {
     private readonly ApplicationContext _applicationContext;

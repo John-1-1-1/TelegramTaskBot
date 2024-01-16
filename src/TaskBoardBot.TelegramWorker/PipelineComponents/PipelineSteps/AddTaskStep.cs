@@ -1,11 +1,11 @@
 using System.Globalization;
 using Hors;
 using TaskBoardBot.TelegramWorker.Context;
-using TaskBoardBot.TelegramWorker.IntermittentPipeline;
+using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace TaskBoardBot.TelegramWorker.PipelineSteps;
+namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
 
 public class AddTaskStep: PipelineUnit {
     
@@ -13,7 +13,7 @@ public class AddTaskStep: PipelineUnit {
     public override PipelineContext UpdateMessage(PipelineContext pipelineContext) {
 
         var message = pipelineContext.GetMessage();
-        var user = pipelineContext.DataBaseService.GetUser(message.Chat.Id);
+        var user = pipelineContext.Parent.GetDbService.GetUser(message.Chat.Id);
         
         if (user == null || user.UserState != TelegramState.None) {
             return pipelineContext;
@@ -25,7 +25,7 @@ public class AddTaskStep: PipelineUnit {
             var buttons = new List<InlineKeyboardButton[]>();
 
             user.AddedText = parseTime.Text;
-            pipelineContext.DataBaseService.UpdateUser(user);
+            pipelineContext.Parent.GetDbService.UpdateUser(user);
 
             string textMessage = parseTime.Text + "\n\n";
             foreach (var date in parseTime.Dates) {
@@ -51,26 +51,29 @@ public class AddTaskStep: PipelineUnit {
     }
 
     public override PipelineContext UpdateCallbackQuery(PipelineContext pipelineContext) {
-        if (pipelineContext.CallbackQuery == null) {
+        var callback = pipelineContext.GetCallbackQuery();
+        if (callback == null) {
+            return pipelineContext;
+        }
+        var user = pipelineContext.Parent.GetDbService.GetUser(
+            callback.From.Id);
+        if (user == null) {
             return pipelineContext;
         }
         
         pipelineContext.TelegramBotClient.
-            AnswerCallbackQueryAsync(pipelineContext.CallbackQuery.Id);
+            AnswerCallbackQueryAsync(callback.Id);
         
-        if (pipelineContext.CallbackQuery.Data[0] == 't') {
-            string message = pipelineContext.CallbackQuery.Data.Remove(0, 1);
+        if (callback.Data != null && callback.Data[0] == 't') {
+            string message = callback.Data.Remove(0, 1);
 
-            var user = pipelineContext.DataBaseService.GetUser(
-                pipelineContext.CallbackQuery.Message.Chat.Id);
-
-            pipelineContext.DataBaseService.AddTasks(new Tasks() {
+            pipelineContext.Parent.GetDbService.AddTasks(new Tasks() {
                 DateTime = DateTime.FromFileTime(long.Parse(message)),
                 TgId = user.TgId, Text = user.AddedText
             });
 
             user.AddedText = string.Empty;
-            pipelineContext.DataBaseService.UpdateUser(user);
+            pipelineContext.Parent.GetDbService.UpdateUser(user);
             pipelineContext.KillPipeline();
         }
         
