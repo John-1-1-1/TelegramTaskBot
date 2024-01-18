@@ -1,4 +1,5 @@
 using TaskBoardBot.TelegramWorker.Context;
+using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.PipelineComponents;
 
 namespace TaskBoardBot.TelegramWorker.Services;

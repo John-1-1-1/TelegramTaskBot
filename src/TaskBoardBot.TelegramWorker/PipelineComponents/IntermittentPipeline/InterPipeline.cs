@@ -1,4 +1,7 @@
+using TaskBoardBot.TelegramWorker.Context;
+using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.Services;
+using Telegram.Bot.Types.Enums;
 
 namespace TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 
@@ -13,14 +16,25 @@ public class InterPipeline(IServiceProvider iServiceProvider) : PipelineUnit {
         return this;
     }
     
-    public override PipelineContext Execute(PipelineContext obj) {
+    public void Execute(PipelineContext obj) {
         obj.Parent = this;
+        
+        var message = obj.GetMessage();
+        var callback = obj.GetCallbackQuery(); 
+        Users? user = null;
+
         foreach (var pipelineUnit in _pipelineUnits) {
-            obj = pipelineUnit.Execute(obj);
+            if (obj.Type == UpdateType.Message && message != null) {
+                user = GetDbService.GetUser(message.Chat.Id);
+                obj = pipelineUnit.UpdateMessage(obj, message, user);
+            }
+            if (obj.Type == UpdateType.CallbackQuery && callback != null) {
+                user = GetDbService.GetUser(callback.From.Id);
+                obj = pipelineUnit.UpdateCallbackQuery(obj, callback, user);
+            }
             if (!obj.IsExecute) {
                 break;
             }
         }
-        return obj;
     }
 }

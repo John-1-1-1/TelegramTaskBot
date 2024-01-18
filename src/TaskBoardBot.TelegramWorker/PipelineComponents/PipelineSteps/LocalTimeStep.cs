@@ -1,7 +1,10 @@
 using System.Globalization;
 using Hors;
+using TaskBoardBot.TelegramWorker.Context;
+using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
@@ -9,30 +12,26 @@ namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
 public class LocalTimeStep: PipelineUnit {
     private readonly HorsTextParser _horsTextParser = new();
     
-    public override PipelineContext UpdateMessage(PipelineContext pipelineContext) {
-        var message = pipelineContext.GetMessage();
-        
-        if (message == null) {
-            return pipelineContext;
-        }
-        
-        var user = pipelineContext.Parent.GetDbService.GetUser(message.Chat.Id);
+    public override PipelineContext UpdateMessage(PipelineContext pipelineContext, Message message, Users? user) {
         var text = message.Text;
-        
-        if (text == null) {
-            return pipelineContext;
-        }
         
         if (user == null) {
             return pipelineContext;
         }
 
+        if (user.LocalTime == null && user.UserState == TelegramState.None) {
+            user.UserState = TelegramState.ChangeLocalTime;
+            pipelineContext.Parent.GetDbService.UpdateUser(user);
+            pipelineContext.TelegramBotClient.SendTextMessageAsync(message.Chat, "Введите местное время для корректной работы бота!");
+            return pipelineContext;
+        }
+        
         if (user.UserState == TelegramState.None) {
-            switch (text.ToLower()) {
+            switch (text?.ToLower()) {
                 case "локальное время": {
                     user.UserState = TelegramState.ChangeLocalTime;
                     pipelineContext.Parent.GetDbService.UpdateUser(user);
-                    pipelineContext.TelegramBotClient.SendTextMessageAsync(message.Chat, "Введите своё время!");
+                    pipelineContext.TelegramBotClient.SendTextMessageAsync(message.Chat, "Введите местное время!");
                     return pipelineContext;
                 }
             }
@@ -63,24 +62,19 @@ public class LocalTimeStep: PipelineUnit {
         return pipelineContext;
     }
 
-    public override PipelineContext UpdateCallbackQuery(PipelineContext pipelineContext) {
-        var callback = pipelineContext.GetCallbackQuery();
-        if (callback == null) {
-            return pipelineContext;
-        }
+    public override PipelineContext UpdateCallbackQuery(PipelineContext pipelineContext,
+        CallbackQuery callbackQuery, Users? user) {
         
         pipelineContext.TelegramBotClient.
-            AnswerCallbackQueryAsync(callback.Id);
+            AnswerCallbackQueryAsync(callbackQuery.Id);
         
-        if (callback.Data != null && callback.Data[0] == 'l') {
-            string message = callback.Data.Remove(0, 1);
-
-            var user = pipelineContext.Parent.GetDbService.GetUser(
-                callback.From.Id);
+        if (callbackQuery.Data != null && callbackQuery.Data[0] == 'l') {
+            string message = callbackQuery.Data.Remove(0, 1);
 
             if (user != null) {
                 user.UserState = TelegramState.None;
-                user.LocalTime = DateTime.FromFileTime(long.Parse(message)).ToUniversalTime().Hour +
+                
+                user.LocalTime = DateTime.FromFileTime(long.Parse(message)).Hour - 
                                  DateTime.UtcNow.Hour;
 
                 pipelineContext.Parent.GetDbService.UpdateUser(user);

@@ -1,20 +1,16 @@
+using TaskBoardBot.TelegramWorker.Context;
+using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
 
 public class StartCommandStep : PipelineUnit {
-    public override PipelineContext UpdateMessage(PipelineContext pipelineContext) {
-        
-        var message = pipelineContext.GetMessage();
+    public override PipelineContext UpdateMessage(PipelineContext pipelineContext, 
+        Message message, Users? user) {
 
-        if (message == null) {
-            return pipelineContext;
-        }
-
-        var user = pipelineContext.Parent.GetDbService.GetUser(message.Chat.Id);
-        
             var replyKeyboard = new ReplyKeyboardMarkup(
                 new List<KeyboardButton[]>() {
                     new KeyboardButton[] {

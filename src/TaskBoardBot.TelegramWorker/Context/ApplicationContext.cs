@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TaskBoardBot.TelegramWorker.Context.DbTables;
 
 namespace TaskBoardBot.TelegramWorker.Context;
 
