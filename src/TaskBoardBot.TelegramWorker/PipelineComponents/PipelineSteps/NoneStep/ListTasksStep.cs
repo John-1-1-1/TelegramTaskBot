@@ -1,16 +1,15 @@
-using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
+namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.NoneStep;
 
 public class ListTasksStep: PipelineUnit {
     public override PipelineContext UpdateMessage(PipelineContext pipelineContext,
         Message message, Users? user) {
         
-        if (user == null || user.UserState != TelegramState.None) {
+        if (user == null) {
             return pipelineContext;
         }
         

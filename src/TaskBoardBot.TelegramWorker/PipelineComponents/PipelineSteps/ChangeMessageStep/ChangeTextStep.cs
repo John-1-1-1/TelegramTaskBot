@@ -1,6 +1,4 @@
 using System.Globalization;
-using Newtonsoft.Json;
-using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using Telegram.Bot;
@@ -8,15 +6,11 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
+namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.ChangeMessageStep;
 
 public class ChangeTextStep: PipelineUnit {
     public override PipelineContext UpdateMessage(PipelineContext pipelineContext, 
         Message message, Users? user) {
-
-        if (user?.UserState != TelegramState.ChangeMessage) {
-            return pipelineContext;
-        }
 
         if (message.Text != null) {
             user.AddedText = message.Text;

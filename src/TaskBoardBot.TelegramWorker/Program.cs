@@ -1,7 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using TaskBoardBot.TelegramWorker.Context;
+using TaskBoardBot.TelegramWorker.PipelineComponents;
 using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
+using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.ChangeLocalTime;
+using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.ChangeMessageStep;
+using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.NoneStep;
 using TaskBoardBot.TelegramWorker.Services;
 using TaskBoardBot.TelegramWorker.TelegramBot;
 using TaskBoardBot.TelegramWorker.Workers;
@@ -19,12 +23,28 @@ builder.Services.AddSingleton<DataBaseService>();
 builder.Services.AddSingleton<TelegramBotService>();
 
 builder.Services.AddSingleton<InterPipeline>(sp => 
-    new InterPipeline(sp)   
-        .Add(new StartCommandStep())
-        .Add(new ListTasksStep())
-        .Add(new LocalTimeStep())
-        .Add(new ChangeTextStep())
-        .Add(new AddTaskStep())
+    new InterPipeline(sp).AddLine(
+        
+        new PipelineLineBuilder(TelegramState.Null)
+            .Add(new StartCommandStep())
+        ).AddLine(
+        
+        new PipelineLineBuilder(TelegramState.None)
+            .Add(new StartLocalTimeStep())
+            .Add(new ListTasksStep())
+            .Add(new AddTaskStep())
+        ).AddLine(
+        
+        new PipelineLineBuilder(TelegramState.ChangeMessage)
+            .Add(new ChangeTextStep())
+        ).AddLine(
+        
+        new PipelineLineBuilder(TelegramState.ChangeDate) 
+        ).AddLine(
+        
+        new PipelineLineBuilder(TelegramState.ChangeLocalTime)
+            .Add(new LocalTimeStep())
+        )
     );
 
 builder.Services.AddHostedService<TelegramBotWorker>();

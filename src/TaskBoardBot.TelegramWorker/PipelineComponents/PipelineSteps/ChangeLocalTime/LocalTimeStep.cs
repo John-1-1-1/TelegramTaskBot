@@ -1,13 +1,12 @@
 using System.Globalization;
 using Hors;
-using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
+namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.ChangeLocalTime;
 
 public class LocalTimeStep: PipelineUnit {
     private readonly HorsTextParser _horsTextParser = new();
@@ -17,24 +16,6 @@ public class LocalTimeStep: PipelineUnit {
         
         if (user == null) {
             return pipelineContext;
-        }
-
-        if (user.LocalTime == null && user.UserState == TelegramState.None) {
-            user.UserState = TelegramState.ChangeLocalTime;
-            pipelineContext.Parent.GetDbService.UpdateUser(user);
-            pipelineContext.TelegramBotClient.SendTextMessageAsync(message.Chat, "Введите местное время для корректной работы бота!");
-            return pipelineContext;
-        }
-        
-        if (user.UserState == TelegramState.None) {
-            switch (text?.ToLower()) {
-                case "локальное время": {
-                    user.UserState = TelegramState.ChangeLocalTime;
-                    pipelineContext.Parent.GetDbService.UpdateUser(user);
-                    pipelineContext.TelegramBotClient.SendTextMessageAsync(message.Chat, "Введите местное время!");
-                    return pipelineContext;
-                }
-            }
         }
 
         const string textMessage = "Выберите местное время:";

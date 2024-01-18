@@ -1,18 +1,19 @@
 using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.Services;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 
 public class InterPipeline(IServiceProvider iServiceProvider) : PipelineUnit {
     
-    private readonly ICollection<PipelineUnit> _pipelineUnits = new List<PipelineUnit>();
+    private readonly Dictionary<TelegramState, ICollection<PipelineUnit>> _pipelineUnits = new();
     public DataBaseService GetDbService { get; } = iServiceProvider.GetService<DataBaseService>()
                                                    ?? throw new Exception("DataBaseService is null");
-
-    public InterPipeline Add(PipelineUnit unit) {
-        _pipelineUnits.Add(unit);
+    
+    public InterPipeline AddLine(PipelineLineBuilder pipelineLineBuilder) {
+        _pipelineUnits[pipelineLineBuilder.State ?? TelegramState.Null] = pipelineLineBuilder.PipelineUnits;
         return this;
     }
     
@@ -21,15 +22,14 @@ public class InterPipeline(IServiceProvider iServiceProvider) : PipelineUnit {
         
         var message = obj.GetMessage();
         var callback = obj.GetCallbackQuery(); 
-        Users? user = null;
-
-        foreach (var pipelineUnit in _pipelineUnits) {
+        
+        Users? user = GetDbService.GetUser(message?.Chat.Id ?? callback?.From.Id);
+        
+        foreach (var pipelineUnit in _pipelineUnits[user?.UserState ?? TelegramState.Null]) {
             if (obj.Type == UpdateType.Message && message != null) {
-                user = GetDbService.GetUser(message.Chat.Id);
                 obj = pipelineUnit.UpdateMessage(obj, message, user);
             }
             if (obj.Type == UpdateType.CallbackQuery && callback != null) {
-                user = GetDbService.GetUser(callback.From.Id);
                 obj = pipelineUnit.UpdateCallbackQuery(obj, callback, user);
             }
             if (!obj.IsExecute) {
@@ -38,3 +38,4 @@ public class InterPipeline(IServiceProvider iServiceProvider) : PipelineUnit {
         }
     }
 }
+
