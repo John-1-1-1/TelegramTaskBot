@@ -3,9 +3,11 @@ using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.PipelineComponents;
 using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
+using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.ChangeDate;
 using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.ChangeLocalTime;
 using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.ChangeMessageStep;
 using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.NoneStep;
+using TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.NullStep;
 using TaskBoardBot.TelegramWorker.Services;
 using TaskBoardBot.TelegramWorker.TelegramBot;
 using TaskBoardBot.TelegramWorker.Workers;
@@ -40,6 +42,7 @@ builder.Services.AddSingleton<InterPipeline>(sp =>
         ).AddLine(
         
         new PipelineLineBuilder(TelegramState.ChangeDate) 
+            .Add(new ChangeDateStep())
         ).AddLine(
         
         new PipelineLineBuilder(TelegramState.ChangeLocalTime)

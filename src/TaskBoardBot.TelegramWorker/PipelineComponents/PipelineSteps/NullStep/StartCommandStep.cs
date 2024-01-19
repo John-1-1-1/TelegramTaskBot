@@ -1,11 +1,10 @@
-using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
+namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.NullStep;
 
 public class StartCommandStep : PipelineUnit {
     public override PipelineContext UpdateMessage(PipelineContext pipelineContext, 
@@ -15,7 +14,7 @@ public class StartCommandStep : PipelineUnit {
                 new List<KeyboardButton[]>() {
                     new KeyboardButton[] {
                         new("Список дел"),
-                        new("Локальное время"),
+                        new("Местное время"),
                     }
                 }) {
                 ResizeKeyboard = true,
@@ -24,15 +23,17 @@ public class StartCommandStep : PipelineUnit {
             switch (message.Text) {
                 case "/start": {
                     if (user == null) {
-                        pipelineContext.Parent.GetDbService.AddUser(message.Chat.Id, TelegramState.None);
                         pipelineContext.TelegramBotClient.SendTextMessageAsync(
                             message.Chat, "Вы успешно зарегестрированы!", replyMarkup: replyKeyboard);
+                        pipelineContext.Parent.GetDbService.AddUser(message.Chat.Id, TelegramState.ChangeLocalTime);
+                        pipelineContext.TelegramBotClient.SendTextMessageAsync(
+                            message.Chat, "Введите местное время, чтобы бот знал когда вас оповещать!", replyMarkup: replyKeyboard);
                     }
                     else {
                         pipelineContext.TelegramBotClient.SendTextMessageAsync(
                             message.Chat, "Вы уже зарегестрированы!", replyMarkup: replyKeyboard);
+                        pipelineContext.KillPipeline();
                     }
-                    pipelineContext.KillPipeline();
                     break;
                 }
                 default: {

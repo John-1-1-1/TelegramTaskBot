@@ -63,7 +63,7 @@ public class DataBaseService {
 
     public ICollection<Tasks> GetTasksCollection(long tgId) {
         try {
-            return _applicationContext.Tasks.Where(t => t.TgId == tgId).ToList();
+            return _applicationContext.Tasks.Where(t => t.TgId == tgId && t.IsActive == true).ToList();
         } catch {
             _logger.LogError("GetTasksCollection: ApplicationContext incorrect");
             return new List<Tasks>();

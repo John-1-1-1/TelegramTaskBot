@@ -14,8 +14,4 @@
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
         <PackageReference Include="Telegram.Bot" Version="20.0.0-alpha.1" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="PipelineComponents\PipelineSteps\ChangeDate\" />
-    </ItemGroup>
 </Project>

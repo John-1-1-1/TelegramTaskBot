@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using Hors;
 using TaskBoardBot.TelegramWorker.Context;
@@ -6,7 +5,6 @@ using TaskBoardBot.TelegramWorker.Context.DbTables;
 using TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps.NoneStep;
 
@@ -19,29 +17,16 @@ public class AddTaskStep: PipelineUnit {
             if (user == null) {
                 return pipelineContext;
             }
-        
             
-            var parseTime = _horsTextParser.Parse(message.Text, DateTime.Now);
-            var buttons = new List<InlineKeyboardButton[]>();
+            var parseTime = _horsTextParser.Parse(message.Text, DateTime.Now.Add(user.LocalTime));
 
             user.AddedText = parseTime.Text;
-                
-            List<DateTime> listDates = new List<DateTime>();
-            int count = 0;
+            
             string textMessage = parseTime.Text;
-            foreach (var date in parseTime.Dates) {
-                count++;
-                listDates.Add(date.DateTo);
-                buttons.Add(new InlineKeyboardButton[] {
-                    InlineKeyboardButton.WithCallbackData(date.DateTo.ToString(CultureInfo.InvariantCulture),
-                        "t" + date.DateTo.ToFileTime())
-                });
-                if (count > 5) {
-                    break;
-                }
-            }
+            List<DateTime> listDates = parseTime.Dates.Select(d => d.DateTo).ToList();
 
-            if (count == 0) {
+            if (listDates.Count == 0) {
+
                 pipelineContext.TelegramBotClient.SendTextMessageAsync(
                     message.Chat, "Дата не распознана!"
                 );
@@ -50,18 +35,14 @@ public class AddTaskStep: PipelineUnit {
                 
             user.Times = JsonSerializer.Serialize(listDates);
             pipelineContext.Parent.GetDbService.UpdateUser(user);
-                
-            buttons.Add(new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("Изменить дату", "changeDate"),
-                InlineKeyboardButton.WithCallbackData("Изменить текст", "changeText"),
-            });
-            var inlineKeyboard = new InlineKeyboardMarkup(buttons);
 
+            var inlineKeyboard = new MarkupBuilder().AddDates(listDates, "t",
+                user.LocalTime).GetChangeButton().GetInlineKeyboardMarkup();
 
             pipelineContext.TelegramBotClient.SendTextMessageAsync(
                 message.Chat, textMessage, replyMarkup: inlineKeyboard
             );
-            pipelineContext.IsExecute = false;
+            pipelineContext.KillPipeline();
             
             return pipelineContext;
     }
@@ -78,25 +59,29 @@ public class AddTaskStep: PipelineUnit {
 
         if (callbackQuery.Data == "changeDate") {
             user.UserState = TelegramState.ChangeDate;
+            pipelineContext.TelegramBotClient.SendTextMessageAsync(
+                callbackQuery.From.Id, "Введите новую дату!"
+            );
             pipelineContext.Parent.GetDbService.UpdateUser(user);
         }
         
         if (callbackQuery.Data == "changeText") {
             user.UserState = TelegramState.ChangeMessage;
+            pipelineContext.TelegramBotClient.SendTextMessageAsync(
+                callbackQuery.From.Id, "Введите новый текст!"
+            );
             pipelineContext.Parent.GetDbService.UpdateUser(user);
         }
         
         if (callbackQuery.Data != null && callbackQuery.Data[0] == 't') {
             string message = callbackQuery.Data.Remove(0, 1);
+            
+            pipelineContext.Parent.GetDbService.AddTasks(new Tasks() {
+                DateTime = DateTime.FromFileTime(long.Parse(message)),
+                TgId = user.TgId, Text = user.AddedText
+            });
 
-            int? localTime = user.LocalTime;
-            if (localTime != null) {
-
-                pipelineContext.Parent.GetDbService.AddTasks(new Tasks() {
-                    DateTime = DateTime.FromFileTime(long.Parse(message)).AddHours(localTime.Value),
-                    TgId = user.TgId, Text = user.AddedText
-                });
-            }
+            pipelineContext.TelegramBotClient.SendTextMessageAsync(user.TgId, "Задача успешно добавлена");
 
             user.AddedText = string.Empty;
             pipelineContext.Parent.GetDbService.UpdateUser(user);

@@ -16,32 +16,19 @@ public class ChangeTextStep: PipelineUnit {
             user.AddedText = message.Text;
             user.UserState = TelegramState.None;
             pipelineContext.Parent.GetDbService.UpdateUser(user);
-            
-            var buttons = new List<InlineKeyboardButton[]>();
 
             var parseTime = JsonSerializer.Deserialize<List<DateTime>>(user.Times);
 
             if (parseTime == null) {
                 return pipelineContext;
             }
-            
-            foreach (var date in parseTime) {
-                buttons.Add(new InlineKeyboardButton[] {
-                    InlineKeyboardButton.WithCallbackData(date.ToString(CultureInfo.InvariantCulture),
-                        "t" + date.ToFileTime())
-                });
-            }
-            
-            buttons.Add(new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("Изменить дату", "changeDate"),
-                InlineKeyboardButton.WithCallbackData("Изменить текст", "changeText"),
-            });
-            var inlineKeyboard = new InlineKeyboardMarkup(buttons);
 
+            var inlineMarkup = new MarkupBuilder().AddDates(parseTime, "t")
+                .GetChangeButton().GetInlineKeyboardMarkup();
             
 
             pipelineContext.TelegramBotClient.SendTextMessageAsync(
-                message.Chat, message.Text, replyMarkup: inlineKeyboard
+                message.Chat, message.Text, replyMarkup: inlineMarkup
             );
         }
 
