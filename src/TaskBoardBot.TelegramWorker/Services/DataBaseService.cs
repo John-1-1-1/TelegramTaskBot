@@ -49,7 +49,10 @@ public class DataBaseService {
     }
 
 
-    public Users? GetUser(long tgId) {
+    public Users? GetUser(long? tgId) {
+        if (tgId == null) {
+            return null;
+        }
         try {
             return _applicationContext.Users.FirstOrDefault(u => u.TgId == tgId);
         } catch { 

@@ -22,6 +22,8 @@ builder.Services.AddSingleton<InterPipeline>(sp =>
     new InterPipeline(sp)   
         .Add(new StartCommandStep())
         .Add(new ListTasksStep())
+        .Add(new CallbackLocalTimeStep())
+        .Add(new LocalTimeChangeTimeStep())
         .Add(new LocalTimeStep())
         .Add(new ChangeTextStep())
         .Add(new AddTaskStep())

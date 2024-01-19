@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using TaskBoardBot.TelegramWorker.Context;
 using TaskBoardBot.TelegramWorker.Context.DbTables;
 using Telegram.Bot.Types;
@@ -7,6 +8,8 @@ namespace TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 
 public abstract class PipelineUnit: PipelineMethods {
 
+    public abstract bool IsTrueState(TelegramState? state);
+    
     public override PipelineContext UpdateCallbackQuery(PipelineContext pipelineContext, 
         CallbackQuery callbackQuery, Users? user) {
         return pipelineContext;

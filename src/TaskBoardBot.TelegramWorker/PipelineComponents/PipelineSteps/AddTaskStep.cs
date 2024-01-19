@@ -16,55 +16,39 @@ public class AddTaskStep: PipelineUnit {
     public override PipelineContext UpdateMessage(PipelineContext pipelineContext, 
         Message message, Users? user) {
 
-            if (user == null || user.UserState != TelegramState.None) {
+            if (user == null) {
                 return pipelineContext;
             }
-        
-            if (user.UserState == TelegramState.None) {
-
-                var parseTime = _horsTextParser.Parse(message.Text, DateTime.Now);
-                var buttons = new List<InlineKeyboardButton[]>();
-
-                user.AddedText = parseTime.Text;
+            
+            var parseTime = _horsTextParser.Parse(message.Text, DateTime.Now);
                 
-                List<DateTime> listDates = new List<DateTime>();
-                int count = 0;
-                string textMessage = parseTime.Text;
-                foreach (var date in parseTime.Dates) {
-                    count++;
-                    listDates.Add(date.DateTo);
-                    buttons.Add(new InlineKeyboardButton[] {
-                        InlineKeyboardButton.WithCallbackData(date.DateTo.ToString(CultureInfo.InvariantCulture),
-                            "t" + date.DateTo.ToFileTime())
-                    });
-                    if (count > 5) {
-                        break;
-                    }
-                }
-
-                if (count == 0) {
-                    pipelineContext.TelegramBotClient.SendTextMessageAsync(
-                        message.Chat, "Дата не распознана!"
-                    );
-                    return pipelineContext;
-                }
-                
-                user.Times = JsonSerializer.Serialize(listDates);
-                pipelineContext.Parent.GetDbService.UpdateUser(user);
-                
-                buttons.Add(new InlineKeyboardButton[] {
-                    InlineKeyboardButton.WithCallbackData("Изменить дату", "changeDate"),
-                    InlineKeyboardButton.WithCallbackData("Изменить текст", "changeText"),
-                });
-                var inlineKeyboard = new InlineKeyboardMarkup(buttons);
+            List<DateTime> listDates = parseTime.Dates.Select(d => d.DateTo).ToList();
 
 
+            if (listDates.Count == 0) {
                 pipelineContext.TelegramBotClient.SendTextMessageAsync(
-                    message.Chat, textMessage, replyMarkup: inlineKeyboard
+                    message.Chat, "Дата не распознана!"
                 );
-                pipelineContext.IsExecute = false;
+                return pipelineContext;
             }
-        return pipelineContext;
+                
+            user.AddedText = parseTime.Text;
+            user.Times = JsonSerializer.Serialize(listDates);
+            pipelineContext.Parent.GetDbService.UpdateUser(user);
+
+            var inlineKeyboard = new InlineButtonsBuilder()
+                .AddDates(listDates).AddChangeButtons().GetInlineKeyboardMarkup();
+            
+            pipelineContext.TelegramBotClient.SendTextMessageAsync(
+                message.Chat, parseTime.Text, replyMarkup: inlineKeyboard);
+            
+            pipelineContext.IsExecute = false;
+            
+            return pipelineContext;
+    }
+
+    public override bool IsTrueState(TelegramState? state) {
+        return state == TelegramState.None;
     }
 
     public override PipelineContext UpdateCallbackQuery(PipelineContext pipelineContext, 

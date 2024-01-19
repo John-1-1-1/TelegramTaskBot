@@ -8,6 +8,10 @@ using Telegram.Bot.Types.ReplyMarkups;
 namespace TaskBoardBot.TelegramWorker.PipelineComponents.PipelineSteps;
 
 public class StartCommandStep : PipelineUnit {
+    public override bool IsTrueState(TelegramState? state) {
+        return true;
+    }
+
     public override PipelineContext UpdateMessage(PipelineContext pipelineContext, 
         Message message, Users? user) {
 
@@ -31,8 +35,8 @@ public class StartCommandStep : PipelineUnit {
                     else {
                         pipelineContext.TelegramBotClient.SendTextMessageAsync(
                             message.Chat, "Вы уже зарегестрированы!", replyMarkup: replyKeyboard);
+                        pipelineContext.KillPipeline();
                     }
-                    pipelineContext.KillPipeline();
                     break;
                 }
                 default: {
