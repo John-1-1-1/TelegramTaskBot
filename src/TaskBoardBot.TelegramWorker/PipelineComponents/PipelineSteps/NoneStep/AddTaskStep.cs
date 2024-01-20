@@ -19,10 +19,7 @@ public class AddTaskStep: PipelineUnit {
             }
             
             var parseTime = _horsTextParser.Parse(message.Text, DateTime.Now.Add(user.LocalTime));
-
-            user.AddedText = parseTime.Text;
             
-            string textMessage = parseTime.Text;
             List<DateTime> listDates = parseTime.Dates.Select(d => d.DateTo).ToList();
 
             if (listDates.Count == 0) {
@@ -32,16 +29,19 @@ public class AddTaskStep: PipelineUnit {
                 );
                 return pipelineContext;
             }
-                
-            user.Times = JsonSerializer.Serialize(listDates);
-            pipelineContext.Parent.GetDbService.UpdateUser(user);
-
+            
             var inlineKeyboard = new MarkupBuilder().AddDates(listDates, "t",
                 user.LocalTime).GetChangeButton().GetInlineKeyboardMarkup();
 
             pipelineContext.TelegramBotClient.SendTextMessageAsync(
-                message.Chat, textMessage, replyMarkup: inlineKeyboard
+                message.Chat, parseTime.Text, replyMarkup: inlineKeyboard
             );
+            
+            user.AddedText = parseTime.Text;
+            user.Times = JsonSerializer.Serialize(listDates);        
+            user.UserState = TelegramState.None;
+            pipelineContext.Parent.GetDbService.UpdateUser(user);
+            
             pipelineContext.KillPipeline();
             
             return pipelineContext;
@@ -84,6 +84,7 @@ public class AddTaskStep: PipelineUnit {
             pipelineContext.TelegramBotClient.SendTextMessageAsync(user.TgId, "Задача успешно добавлена");
 
             user.AddedText = string.Empty;
+            user.Times = string.Empty; 
             pipelineContext.Parent.GetDbService.UpdateUser(user);
         }
         

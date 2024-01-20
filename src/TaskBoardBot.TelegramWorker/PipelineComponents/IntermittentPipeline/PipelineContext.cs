@@ -4,11 +4,10 @@ using Telegram.Bot.Types.Enums;
 
 namespace TaskBoardBot.TelegramWorker.PipelineComponents.IntermittentPipeline;
 
-public class PipelineContext(ITelegramBotClient telegramBotClient, 
-    Update? update, UpdateType type) {
+public class PipelineContext(TelegramBotClient telegramBotClient, 
+    Update? update) {
     public bool IsExecute = true;
     public readonly ITelegramBotClient TelegramBotClient = telegramBotClient;
-    public readonly UpdateType Type = type;
     public InterPipeline Parent = null!;
 
     public Message? GetMessage() {

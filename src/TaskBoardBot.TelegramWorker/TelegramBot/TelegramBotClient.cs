@@ -40,7 +40,7 @@ public class TelegramBotClient {
     private Task UpdateHandler(ITelegramBotClient botClient,
         Update update, CancellationToken cancellationToken) {
         try {
-            _pipeline.Execute(new PipelineContext(TelegramClient, update, update.Type));
+            _pipeline.Execute(new PipelineContext(update, update.Type));
         }
         catch {
             // ignored

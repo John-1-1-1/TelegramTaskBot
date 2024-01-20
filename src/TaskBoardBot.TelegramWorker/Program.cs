@@ -26,11 +26,6 @@ builder.Services.AddSingleton<TelegramBotService>();
 
 builder.Services.AddSingleton<InterPipeline>(sp => 
     new InterPipeline(sp).AddLine(
-        
-        new PipelineLineBuilder(TelegramState.Null)
-            .Add(new StartCommandStep())
-        ).AddLine(
-        
         new PipelineLineBuilder(TelegramState.None)
             .Add(new StartLocalTimeStep())
             .Add(new ListTasksStep())
@@ -47,6 +42,10 @@ builder.Services.AddSingleton<InterPipeline>(sp =>
         
         new PipelineLineBuilder(TelegramState.ChangeLocalTime)
             .Add(new LocalTimeStep())
+        ).AddPriorityLine(
+            new PipelineLineBuilder().Add(
+                new StartCommandStep()
+                )
         )
     );
 

@@ -27,15 +27,15 @@ public class ChangeDateStep: PipelineUnit {
             );
             return pipelineContext;
         }
-        user.Times = JsonSerializer.Serialize(listDates);        
-        pipelineContext.Parent.GetDbService.UpdateUser(user);
-
+        
         var inlineKeyboard = new MarkupBuilder().AddDates(listDates, "t",
             user.LocalTime).GetChangeButton().GetInlineKeyboardMarkup();
 
         pipelineContext.TelegramBotClient.SendTextMessageAsync(
             message.Chat, user.AddedText, replyMarkup: inlineKeyboard
         );
+        
+        user.Times = JsonSerializer.Serialize(listDates);        
         user.UserState = TelegramState.None;
         pipelineContext.Parent.GetDbService.UpdateUser(user);
         
